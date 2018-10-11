@@ -13,6 +13,16 @@ And in that moment I thought to myself: _Did I turn off the stove?_
 用于标注普通文本中的代码，为此，你需要在代码文本两旁添加反撇号。  
 例：  
 You should use the `strong` tag.  
+
+可用如下方式插入代码片段。
+例：
+```c
+int main()
+{
+    ...
+}
+```
+
   
 # 标题顺序
 标题更简单！对于 h1 到 h6 标签，你只需要在文本前添加 #。Markdown 会根据 # 的数量生成相应的标题标记。  
@@ -20,4 +30,4 @@ You should use the `strong` tag.
 ## This is an h2.
 ### This is an h3.
   
-  
+
