@@ -33,17 +33,23 @@ int main()
 在文本最后加两个空格即是换行
 
 #文字超链接
+例：
 [我的博客](http://blog.csdn.net/guodongxiaren)
 
 #插入圆点
-插入单个圆点
+插入单个圆点，例：
 * 昵称：果冻虾仁
 
-插入多级圆点
+插入多级圆点，例：
 * 编程语言
     * 脚本语言
         *python
 
+
+#插入图片
+叹号! + 方括号[ ] + 括号( ) 其中叹号里是图片的URL
+例：
+![](http://www.baidu.com/img/bdlogo.gif) 
 
 
 
