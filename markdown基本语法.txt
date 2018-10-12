@@ -51,7 +51,8 @@ int main()
 例：
 ![](http://www.baidu.com/img/bdlogo.gif) 
 
-
+#添加空格
+用中文输入法输入空格
 
 
 
