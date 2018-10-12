@@ -149,3 +149,47 @@ edges = cv2.Canny(blur_gray, low_threshold, high_threshold)
 plt.imshow(edges, cmap='Greys_r')
 ```
 
+## 利用Hough变换描出已经经过边缘处理后的图像
+```C
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import numpy as np
+import cv2
+
+# Read in and grayscale the image
+image = mpimg.imread('exit-ramp.jpg')
+gray = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+
+# 定义高斯平滑滤波的kernel，做滤波预处理
+kernel_size = 5
+blur_gray = cv2.GaussianBlur(gray,(kernel_size, kernel_size),0)
+
+# 定义canny边缘检测的像素值参数
+low_threshold = 50
+high_threshold = 150
+masked_edges = cv2.Canny(blur_gray, low_threshold, high_threshold)
+
+# 定义hough变换参数
+rho = 1
+theta = np.pi/180
+threshold = 1
+min_line_length = 10
+max_line_gap = 1
+line_image = np.copy(image)*0 #创建一个同尺寸的空白图片
+
+# 运行hough变换，输出检测到的所有直线
+lines = cv2.HoughLinesP(masked_edges, rho, theta, threshold, np.array([]),
+                            min_line_length, max_line_gap)
+
+# 将hough处理后的所有直线绘制到空白图片
+for line in lines:
+    for x1,y1,x2,y2 in line:
+        cv2.line(line_image,(x1,y1),(x2,y2),(255,0,0),10)
+
+# 将上图合成至canny边缘检测后的图片上
+color_edges = np.dstack((masked_edges, masked_edges, masked_edges)) 
+combo = cv2.addWeighted(color_edges, 0.8, line_image, 1, 0) 
+plt.imshow(combo)
+```
+
+
