@@ -222,7 +222,7 @@ Minv = cv2.getPerspectiveTransform(dst, src)
 warped = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
 ```
 
-## *示范函数：对输入图像做畸变矫正和透视变换
+## ***示范函数：对输入图像做畸变矫正和透视变换
 ```C
 # Define a function that takes an image, number of x and y points, 
 # camera matrix and distortion coefficients
