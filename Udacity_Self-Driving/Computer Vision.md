@@ -261,6 +261,154 @@ def corners_unwarp(img, nx, ny, mtx, dist):
     return warped, M
 ```
 
+## Sobel算子
+```C
+# 首先将图像转为灰度格式
+gray = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
 
+# 计算Sobel x方向算子处理后的图像
+sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0)
 
+# 计算Sobel y方向算子处理后的图像
+sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1)
+
+# 对所有像素值取绝对值
+abs_sobelx = np.absolute(sobelx)
+
+# 归一化处理，范围0-255
+scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
+
+# 输出经过Sobel算子处理过的图像
+thresh_min = 20
+thresh_max = 100
+sxbinary = np.zeros_like(scaled_sobel)
+sxbinary[(scaled_sobel >= thresh_min) & (scaled_sobel <= thresh_max)] = 1
+plt.imshow(sxbinary, cmap='gray')
+```
+
+## 梯度值法
+```C
+# 在前面Sobel算子算法的基础上，结合x与y方向上的梯度合成二维梯度，然后输出经二维算子处理过后的图像
+# Define a function to return the magnitude of the gradient
+# for a given sobel kernel size and threshold values
+def mag_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # Take both Sobel x and y gradients
+    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
+    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
+    # Calculate the gradient magnitude
+    gradmag = np.sqrt(sobelx**2 + sobely**2)
+    # Rescale to 8 bit
+    scale_factor = np.max(gradmag)/255 
+    gradmag = (gradmag/scale_factor).astype(np.uint8) 
+    # Create a binary image of ones where threshold is met, zeros otherwise
+    binary_output = np.zeros_like(gradmag)
+    binary_output[(gradmag >= mag_thresh[0]) & (gradmag <= mag_thresh[1])] = 1
+
+    # Return the binary image
+    return binary_output
+```
+
+## 梯度角度法
+```C
+# 在前面Sobel算子算法的基础上，结合两个方向的梯度合成二维梯度的角度，用角度的变化范围筛选出符合条件的像素
+# Define a function to threshold an image for a given range and Sobel kernel
+def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
+    # Grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # Calculate the x and y gradients
+    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
+    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
+    # Take the absolute value of the gradient direction, 
+    # apply a threshold, and create a binary image result
+    absgraddir = np.arctan2(np.absolute(sobely), np.absolute(sobelx))
+    binary_output =  np.zeros_like(absgraddir)
+    binary_output[(absgraddir >= thresh[0]) & (absgraddir <= thresh[1])] = 1
+
+    # Return the binary image
+    return binary_output
+```
+
+## 多因子联合处理
+```C
+def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)):
+    # Calculate directional gradient
+    # Apply threshold
+    return grad_binary
+
+def mag_thresh(image, sobel_kernel=3, mag_thresh=(0, 255)):
+    # Calculate gradient magnitude
+    # Apply threshold
+    return mag_binary
+
+def dir_threshold(image, sobel_kernel=3, thresh=(0, np.pi/2)):
+    # Calculate gradient direction
+    # Apply threshold
+    return dir_binary
+
+# Choose a Sobel kernel size
+ksize = 3 # Choose a larger odd number to smooth gradient measurements
+
+# 生成多种像素筛选结果
+gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(0, 255))
+grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(0, 255))
+mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(0, 255))
+dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0, np.pi/2))
+
+#联合多种条件筛选像素点
+combined = np.zeros_like(dir_binary)
+combined[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
+```
+
+## 定义基于HLS的S值筛选像素
+```C
+def hls_select(img, thresh=(0, 255)):
+    hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
+    s_channel = hls[:,:,2]
+    binary_output = np.zeros_like(s_channel)
+    binary_output[(s_channel > thresh[0]) & (s_channel <= thresh[1])] = 1
+    return binary_output
+```
+
+## 联合梯度与HLS色域筛选的算法
+```C
+# 将图像转换至HLS空间，注意img为畸变矫正后的图像
+hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
+s_channel = hls[:,:,2]
+
+# 将图像转换到灰度空间
+gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+# Sobel x
+sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0)
+abs_sobelx = np.absolute(sobelx)
+scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
+
+# 定义Sobel x算子的阈值
+thresh_min = 20
+thresh_max = 100
+sxbinary = np.zeros_like(scaled_sobel)
+sxbinary[(scaled_sobel >= thresh_min) & (scaled_sobel <= thresh_max)] = 1
+
+# 定义HLS空间S值的阈值
+s_thresh_min = 170
+s_thresh_max = 255
+s_binary = np.zeros_like(s_channel)
+s_binary[(s_channel >= s_thresh_min) & (s_channel <= s_thresh_max)] = 1
+
+color_binary = np.dstack(( np.zeros_like(sxbinary), sxbinary, s_binary)) * 255
+
+# 联合两种算法的像素筛选
+combined_binary = np.zeros_like(sxbinary)
+combined_binary[(s_binary == 1) | (sxbinary == 1)] = 1
+
+# 画出图像
+f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
+ax1.set_title('Stacked thresholds')
+ax1.imshow(color_binary)
+
+ax2.set_title('Combined S channel and gradient thresholds')
+ax2.imshow(combined_binary, cmap='gray')
+```
 
