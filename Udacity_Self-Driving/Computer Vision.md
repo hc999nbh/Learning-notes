@@ -412,3 +412,145 @@ ax2.set_title('Combined S channel and gradient thresholds')
 ax2.imshow(combined_binary, cmap='gray')
 ```
 
+## 定位车道线的起始位置
+```C
+# 基于透视变换后仅剩车道线像素的黑白图像
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 统计每一列像素值之和，可以根据折线图判断当前图像中车道线的起始位置在哪里
+histogram = np.sum(img[img.shape[0]//2:,:], axis=0)
+plt.plot(histogram)
+```
+
+## 利用滑动窗口标记出属于车道线的像素函数
+```C
+# 输入图像为二值化且经过畸变校正及透视变换后的图像
+def find_lane_pixels(binary_warped):
+    histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
+    out_img = np.dstack((binary_warped, binary_warped, binary_warped))
+    # 找到x轴方向的中心点，将车道线分为左右两条
+    midpoint = np.int(histogram.shape[0]//2)
+    leftx_base = np.argmax(histogram[:midpoint])
+    rightx_base = np.argmax(histogram[midpoint:]) + midpoint
+
+    # 定义窗口参数
+    nwindows = 9
+    # Set the width of the windows +/- margin
+    margin = 100
+    # Set minimum number of pixels found to recenter window
+    minpix = 50
+
+    # 定义窗口的高度
+    window_height = np.int(binary_warped.shape[0]//nwindows)
+    # 获取图像中所有非0元素的位置，分别将x和y的坐标值存至两个数组
+    nonzero = binary_warped.nonzero()
+    nonzeroy = np.array(nonzero[0])
+    nonzerox = np.array(nonzero[1])
+    # Current positions to be updated later for each window in nwindows
+    leftx_current = leftx_base
+    rightx_current = rightx_base
+
+    # 创建两个数组用于存储判别出的车道线像素的坐标位置
+    left_lane_inds = []
+    right_lane_inds = []
+
+    # 从图像下方开始从下至上遍历所有窗口
+    for window in range(nwindows):
+        # 确定窗口四个顶点所在的位置
+        win_y_low = binary_warped.shape[0] - (window+1)*window_height
+        win_y_high = binary_warped.shape[0] - window*window_height
+        win_xleft_low = leftx_current - margin
+        win_xleft_high = leftx_current + margin
+        win_xright_low = rightx_current - margin
+        win_xright_high = rightx_current + margin
+        
+        # 将矩形窗口画到原图上
+        cv2.rectangle(out_img,(win_xleft_low,win_y_low),
+        (win_xleft_high,win_y_high),(0,255,0), 2) 
+        cv2.rectangle(out_img,(win_xright_low,win_y_low),
+        (win_xright_high,win_y_high),(0,255,0), 2) 
+        
+        # 将矩形窗口内的非0像素的位置放到good_left_inds及good_right_inds数组中
+        good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
+        (nonzerox >= win_xleft_low) &  (nonzerox < win_xleft_high)).nonzero()[0]
+        good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
+        (nonzerox >= win_xright_low) &  (nonzerox < win_xright_high)).nonzero()[0]
+        
+        left_lane_inds.append(good_left_inds)
+        right_lane_inds.append(good_right_inds)
+        
+        # 若本次窗口中找到的车道线像素点数量大于minpix值，则指定本次窗口中所有车道线像素所在x轴位置的平均值作为下一轮窗口的中心
+        if len(good_left_inds) > minpix:
+            leftx_current = np.int(np.mean(nonzerox[good_left_inds]))
+        if len(good_right_inds) > minpix:        
+            rightx_current = np.int(np.mean(nonzerox[good_right_inds]))
+
+    # Concatenate the arrays of indices (previously was a list of lists of pixels)
+    try:
+        left_lane_inds = np.concatenate(left_lane_inds)
+        right_lane_inds = np.concatenate(right_lane_inds)
+    except ValueError:
+        # Avoids an error if the above is not implemented fully
+        pass
+
+    # Extract left and right line pixel positions
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds] 
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds]
+
+    return leftx, lefty, rightx, righty, out_img
+
+# 使用多项式曲线拟合车道线
+def fit_polynomial(binary_warped):
+
+    leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
+
+    # 用二次多项式分别拟合左右车道线
+    left_fit = np.polyfit(lefty, leftx, 2)
+    right_fit = np.polyfit(righty, rightx, 2)
+
+    # 生成拟合后曲线的像素点
+    ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
+    try:
+        left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+        right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    except TypeError:
+        # Avoids an error if `left` and `right_fit` are still none or incorrect
+        print('The function failed to fit a line!')
+        left_fitx = 1*ploty**2 + 1*ploty
+        right_fitx = 1*ploty**2 + 1*ploty
+
+    ## Visualization ##
+    # Colors in the left and right lane regions
+    out_img[lefty, leftx] = [255, 0, 0]
+    out_img[righty, rightx] = [0, 0, 255]
+
+    # Plots the left and right polynomials on the lane lines
+    plt.plot(left_fitx, ploty, color='yellow')
+    plt.plot(right_fitx, ploty, color='yellow')
+
+    return out_img
+
+```
+
+## 计算车道线的曲率半径
+```C
+def measure_curvature_pixels():
+    
+    # 依据像素与现实中长度单位（米）之间的关系，将像素值转换为长度值
+    ym_per_pix = 30/720 # meters per pixel in y dimension
+    xm_per_pix = 3.7/700 # meters per pixel in x dimension
+    
+    ploty, left_fit_cr, right_fit_cr = generate_data(ym_per_pix, xm_per_pix)
+
+    # 选择计算特定y点的曲率半径值，这里选择y的最大值即图像的最下方即离车身最近的位置
+    y_eval = np.max(ploty)
+    
+    # 根据二次函数曲率半径计算公式
+    left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+    right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+    
+    return left_curverad, right_curverad
+```
