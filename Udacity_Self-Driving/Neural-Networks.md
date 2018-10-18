@@ -41,17 +41,17 @@ weights = np.array([-0.8, 0.5])
 # 每次调整权重的步长
 learnrate = 0.5
 
-# The neural network output (y-hat)
+# 神经网络输出 (y-hat)
 nn_output = sigmoid(x[0]*weights[0] + x[1]*weights[1])
 
 # output error (y - y-hat) 误差函数
 error = y - nn_output
 
 # error term (lowercase delta)
-error_term = error * sigmoid_prime(np.dot(x,weights))
+# δ = (y − y^)*f′(h) = (y − y^)*f′(∑wi*xi)
+# error_term = error * sigmoid_prime(np.dot(x,weights))
 
 # Gradient descent step 
-del_w = [ learnrate * error_term * x[0],
-                 learnrate * error_term * x[1]]
+del_w = learnrate * error * nn_output * (1 - nn_output) * x
 ```
 
