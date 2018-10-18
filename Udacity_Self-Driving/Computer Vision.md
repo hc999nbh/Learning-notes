@@ -1,7 +1,7 @@
 
 
 ## 基于颜色选择的图像处理
-```C
+```python
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
@@ -36,7 +36,7 @@ plt.show()
 ```
 
 ## 选择图像中ROI区域（三角形）
-```C
+```python
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
@@ -75,7 +75,7 @@ plt.imshow(region_select)
 ```
 
 ## 关联颜色选择及ROI选择的图像处理
-```C
+```python
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
@@ -126,7 +126,7 @@ plt.imshow(line_image)
 ```
 
 ## Canny边缘检测
-```C
+```python
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
@@ -150,7 +150,7 @@ plt.imshow(edges, cmap='Greys_r')
 ```
 
 ## 利用Hough变换描出已经经过边缘处理后的图像
-```C
+```python
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
@@ -193,7 +193,7 @@ plt.imshow(combo)
 ```
 
 ## 相机标定
-```C
+```python
 # 先将图像转换为灰度格式
 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
@@ -211,7 +211,7 @@ dst = cv2.undistort(img, mtx, dist, None, mtx)
 ```
 
 ## 相机透视变换
-```C
+```python
 # 一般选择图像中在客观世界为矩形的四个顶点作为dst，选择图像中实际所在位置的四个点作为src，生成透视变换矩阵
 M = cv2.getPerspectiveTransform(src, dst)
 
@@ -223,7 +223,7 @@ warped = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
 ```
 
 ## ***示范函数：对输入图像做畸变矫正和透视变换
-```C
+```python
 # Define a function that takes an image, number of x and y points, 
 # camera matrix and distortion coefficients
 def corners_unwarp(img, nx, ny, mtx, dist):
@@ -262,7 +262,7 @@ def corners_unwarp(img, nx, ny, mtx, dist):
 ```
 
 ## Sobel算子
-```C
+```python
 # 首先将图像转为灰度格式
 gray = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
 
@@ -287,7 +287,7 @@ plt.imshow(sxbinary, cmap='gray')
 ```
 
 ## 梯度值法
-```C
+```python
 # 在前面Sobel算子算法的基础上，结合x与y方向上的梯度合成二维梯度，然后输出经二维算子处理过后的图像
 # Define a function to return the magnitude of the gradient
 # for a given sobel kernel size and threshold values
@@ -311,7 +311,7 @@ def mag_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
 ```
 
 ## 梯度角度法
-```C
+```python
 # 在前面Sobel算子算法的基础上，结合两个方向的梯度合成二维梯度的角度，用角度的变化范围筛选出符合条件的像素
 # Define a function to threshold an image for a given range and Sobel kernel
 def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
@@ -331,7 +331,7 @@ def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
 ```
 
 ## 多因子联合处理
-```C
+```python
 def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)):
     # Calculate directional gradient
     # Apply threshold
@@ -362,7 +362,7 @@ combined[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))
 ```
 
 ## 定义基于HLS的S值筛选像素
-```C
+```python
 def hls_select(img, thresh=(0, 255)):
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
     s_channel = hls[:,:,2]
@@ -372,7 +372,7 @@ def hls_select(img, thresh=(0, 255)):
 ```
 
 ## 联合梯度与HLS色域筛选的算法
-```C
+```python
 # 将图像转换至HLS空间，注意img为畸变矫正后的图像
 hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
 s_channel = hls[:,:,2]
@@ -413,7 +413,7 @@ ax2.imshow(combined_binary, cmap='gray')
 ```
 
 ## 定位车道线的起始位置
-```C
+```python
 # 基于透视变换后仅剩车道线像素的黑白图像
 import numpy as np
 import matplotlib.pyplot as plt
@@ -424,7 +424,7 @@ plt.plot(histogram)
 ```
 
 ## 利用滑动窗口标记出属于车道线的像素函数
-```C
+```python
 # 输入图像为二值化且经过畸变校正及透视变换后的图像
 def find_lane_pixels(binary_warped):
     histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
@@ -536,7 +536,7 @@ def fit_polynomial(binary_warped):
 ```
 
 ## 计算车道线的曲率半径
-```C
+```python
 def measure_curvature_pixels():
     
     # 依据像素与现实中长度单位（米）之间的关系，将像素值转换为长度值
