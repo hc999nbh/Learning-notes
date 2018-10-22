@@ -17,7 +17,7 @@ with tf.Session() as sess:
     output = sess.run(x, feed_dict={x: 'Hello World'})
 ```
 
-## tensorflow代数运算
+## _tensorflow代数运算_
 ### 用法：
 ```python
 x = tf.add(5, 2)  # 7
@@ -26,25 +26,25 @@ y = tf.multiply(2, 5)  # 10
 z = tf.divide(3, 1) # 3
 ```
 
-## tf.matmul(features, weights)
+## _tf.matmul(features, weights)_
 ### 矩阵乘法
 
-## tf.cast()
+## _tf.cast()_
 ### 数据类型转换
 ### 用法：
 ```python
 tf.subtract(tf.cast(tf.constant(2.0), tf.int32), tf.constant(1))   # 1
 ```
 
-## tf.Variable()
+## _tf.Variable()_
 ### 定义tensor类型变量
 
 
-## tf.global_variables_initializer()
+## _tf.global_variables_initializer()_
 ### 初始化tensor变量
 
 
-## tf.truncated_normal()
+## _tf.truncated_normal()_
 ### 生成正态随机分布数值，数值不超过均值2倍标准差
 ### 用法：
 ```python
@@ -53,7 +53,7 @@ n_labels = 5
 weights = tf.Variable(tf.truncated_normal((n_features, n_labels)))
 ```
 
-## tf.zeros()
+## _tf.zeros()_
 ### 将tensor变量置零
 ### 用法：
 ```python
@@ -61,7 +61,7 @@ n_labels = 5
 bias = tf.Variable(tf.zeros(n_labels))
 ```
 
-##  tf.nn.relu()
+## _tf.nn.relu()_
 ### 即y = max(0 , x) ，可替代sigmod作为激活函数
 ### 用法：
 ```python
@@ -69,7 +69,7 @@ hidden_layer = tf.add(tf.matmul(features, hidden_weights), hidden_biases)
 hidden_layer = tf.nn.relu(hidden_layer)
 ```
 
-## tf.reduce_mean()
+## _tf.reduce_mean()_
 ### 对矩阵的一个或多个维度求均值，类似用法的函数包括tf.reduce_sum()，tf.reduce_max()，tf.reduce_min()
 ### 用法：
 ```python
@@ -100,7 +100,7 @@ sess.close()
 # [ 2.  5.]
 ```
 
-## tf.train.GradientDescentOptimizer()
+## _tf.train.GradientDescentOptimizer()_
 ### 使用梯度下降算法的优化器
 ### 用法：
 ```python
@@ -109,17 +109,17 @@ cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, lab
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
 ```
 
-## tf.argmax(vector , 1)
+## _tf.argmax(vector , 1)_
 ### 返回的是vector中的最大值的索引号，如果vector是一个向量，那就返回一个值，如果是一个矩阵，那就返回一个向量，这个向量的每一个维度都是相对应矩阵行的最大值元素的索引号。
 
-## tf.equal()
+## _tf.equal()_
 ### 判断两个元素是否相等，返回true或false
 ### 用法：
 ```python
 tf.equal(tf.argmax(logits, 1), tf.argmax(labels, 1))
 ```
 
-## tf.reshape()
+## _tf.reshape()_
 ### 调整矩阵的形状、维数
 ### 用法：
 ```python
@@ -127,7 +127,7 @@ tf.equal(tf.argmax(logits, 1), tf.argmax(labels, 1))
 tf.reshape(x, [-1, n_input])
 ```
 
-## tf.train.Saver()
+## _tf.train.Saver()_
 ### 模型的保存与载入
 ### 用法：
 ```python
@@ -136,7 +136,7 @@ saver.save(sess, save_file)  # 将sess会话保存至save_file文件
 saver.restore(sess, save_file)  # 从文件载入会话
 ```
 
-## tf.reset_default_graph()
+## _tf.reset_default_graph()_
 ### 清除默认图形堆栈并重置全局默认图形
 
 
