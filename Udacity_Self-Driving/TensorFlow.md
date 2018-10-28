@@ -139,7 +139,18 @@ saver.restore(sess, save_file)  # 从文件载入会话
 ## _tf.reset_default_graph()_
 ### 清除默认图形堆栈并重置全局默认图形
 
+## _tf.nn.dropout()_
+### 对节点实施dropout以防止过拟合
+### 用法：
+```python
+keep_prob = tf.placeholder(tf.float32) # probability to keep units
 
+hidden_layer = tf.add(tf.matmul(features, weights[0]), biases[0])
+hidden_layer = tf.nn.relu(hidden_layer)
+hidden_layer = tf.nn.dropout(hidden_layer, keep_prob)
+
+logits = tf.add(tf.matmul(hidden_layer, weights[1]), biases[1])
+```
 
 
 
