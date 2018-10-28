@@ -152,8 +152,20 @@ hidden_layer = tf.nn.dropout(hidden_layer, keep_prob)
 logits = tf.add(tf.matmul(hidden_layer, weights[1]), biases[1])
 ```
 
-
-
+## _tf.nn.max_pool()_
+### 卷积层池化，一般跟随在卷积层之后，用于缩小卷积层每个维度的大小，类似的还有 _tf.nn.mean_pool()_
+### 用法：
+```python
+conv_layer = tf.nn.conv2d(input, weight, strides=[1, 2, 2, 1], padding='SAME')
+conv_layer = tf.nn.bias_add(conv_layer, bias)
+conv_layer = tf.nn.relu(conv_layer)
+# Apply Max Pooling
+conv_layer = tf.nn.max_pool(
+    conv_layer,
+    ksize=[1, 2, 2, 1],
+    strides=[1, 2, 2, 1],
+    padding='SAME')
+```
 
 
 
