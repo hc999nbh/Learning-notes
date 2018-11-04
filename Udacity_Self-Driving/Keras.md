@@ -33,3 +33,8 @@ model.add(Dense(5))
 model.add(Activation('softmax'))
 ```
 
+## 池化
+```python
+model.add(MaxPooling2D(pool_size=(2, 2)))
+```
+
