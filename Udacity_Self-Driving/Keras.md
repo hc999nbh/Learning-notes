@@ -121,3 +121,14 @@ for metric_i in range(len(model.metrics_names)):
     metric_value = metrics[metric_i]
     print('{}: {}'.format(metric_name, metric_value))
 ```
+
+## Lambda层代码
+```python
+from keras.models import Sequential, Model
+from keras.layers import Lambda
+
+# set up lambda layer
+model = Sequential()
+model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(160,320,3)))
+```
+
